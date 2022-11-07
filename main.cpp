@@ -12,23 +12,51 @@ using namespace std;
 #define PI 3.14159
 
 vector<string> mymap = {
-    "##########################################",
-    "#----------------------------------------#",
-    "#----------------------------------------#",
-    "#----------------#################-------#",
-    "#----------------#################-------#",
-    "#----------------############------------#",
-    "#----------------############-----###----#",
-    "#---------------------------------###----#",
-    "#----------------------------------------#",
-    "##########################################"
+
+    "##########",
+    "#--------#",
+    "#---##---#",
+    "#---##---#",
+    "#---##---#",
+    "#--------#",
+    "#--------#",
+    "#--------#",
+    "#--------#",
+    "#--------#",
+    "##########"
+    
+
+
+
+    // "##########################################",
+    // "#----------------------------------------#",
+    // "#----------------------------------------#",
+    // "#-------------############---------------#",
+    // "#-------------############---------------#",
+    // "#-------------############---------------#",
+    // "#-------------############--------###----#",
+    // "#---------------------------------###----#",
+    // "#----------------------------------------#",
+    // "##########################################"
 };
 
 pair<float,float> player_pos = {5,5};
 float player_angle = 0.2; // radians
-float player_fov = PI / 3; // radians
+float player_fov = PI / 4; // radians
 int num_columns = 120;
 float max_dist = 7;
+
+
+
+void print_map()
+{
+    vector<string> m = mymap;
+    m[(int)player_pos.first][(int)player_pos.second] = 'X';
+    cout << endl << endl << endl;
+    for (string s : m) {
+        cout << s << endl;
+    }
+ }
 
 
 class Screen
@@ -55,12 +83,12 @@ public:
         bool vertical;
         if (abs(round(x)-x) <= abs(round(y)-y)) {
             vertical = true;
-            cout << "true" << endl;
+            // cout << "true" << endl;
         } else {
             vertical = false;
-            cout << "false" << endl;
+            // cout << "false" << endl;
         }
-        return pair<float,bool>(abs(d * cos(angle)), vertical);
+        return pair<float,bool>(d, vertical);
 
     }
 
@@ -68,7 +96,10 @@ public:
     void display_column(float dist, bool vertical, float angle) {
         int col_num = (int) ((angle / player_fov) * num_columns);
         float colx = (float) (screen_width * col_num / num_columns);
-        float col_height = screen_height * (1 - dist / max_dist);
+        // float col_height = screen_height * (1 - dist / max_dist);
+        float ceiling = screen_height/2 - screen_height/dist;
+
+        float col_height = screen_height - 2*ceiling;
         // cout << "dist " << dist << endl; 
         if (col_height < 0) {
             col_height = 0;
@@ -82,7 +113,6 @@ public:
         } else {
             col.setFillColor(sf::Color(0,0,200));
         }
-        
         
         col.setPosition(colx, coly);
         window->draw(col);
@@ -151,9 +181,8 @@ class Player
         cout << mymap[(int)(player_pos.first)][(int)(player_pos.second)] << endl;
     }
 
-
-
 public:
+
     Player() {
 
     }
@@ -192,7 +221,7 @@ int main()
             if (event.type == sf::Event::Closed)
                 window->close();
         }
-
+        print_map();
         player.update_player();
         screen.show_screen();
     }
