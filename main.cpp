@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "zombie.h"
+// #include "map.h"
 
 // g++ main.cpp -I/usr/local/Cellar/sfml/2.5.1_1/include/ -o main -L/usr/local/Cellar/sfml/2.5.1_1/lib/ -lsfml-graphics -lsfml-window -lsfml-system
 
@@ -12,6 +13,7 @@
 using namespace std;
 
 #define PI 3.14159
+
 
 vector<string> mymap = {
     "##########################################",
@@ -25,6 +27,8 @@ vector<string> mymap = {
     "#----------------------------------------#",
     "##########################################"
 };
+
+
 
 pair<float,float> player_pos = {5,5};
 float player_angle = 0.2; // radians
@@ -53,7 +57,6 @@ void print_map()
 void update_zombies(vector<Zombie*>& zombies) 
 {
     for (Zombie *z : zombies) {
-        cout << (int)z->pos.first << " " << (int)z->pos.second << endl;
         mymap[(int)z->pos.first][(int)z->pos.second] = '-';
         pair<int,int> p = {(int)player_pos.first, (int)player_pos.second};
         z->update_zombie(mymap, p);
@@ -199,11 +202,7 @@ class Player
             ) {
             player_pos.first += dx;
             player_pos.second += dy;
-        } else {
-            cout << mymap[(int)(player_pos.first + dx)][(int)(player_pos.second + dy)] << endl;
-
         }
-        cout << mymap[(int)(player_pos.first)][(int)(player_pos.second)] << endl;
     }
 
 public:
@@ -249,11 +248,10 @@ int main()
             if (event.type == sf::Event::Closed)
                 window->close();
         }
-        print_map();
+        // print_map();
         update_zombies(zombies);
         player.update_player();
         screen.show_screen();
     }
-
     delete window;
 }

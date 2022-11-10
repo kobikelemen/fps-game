@@ -20,7 +20,8 @@ Zombie::~Zombie()
 vector<pair<int,int>> Zombie::bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos) 
 {   
     list<pair<int,int>> q = {zpos};
-    vector<pair<int,int>> moves = { {1,0}, {-1,0}, {0,1}, {0,-1} };
+    // vector<pair<int,int>> moves = { {1,0}, {1,1}, {-1,0}, {-1,1}, {0,1}, {-1,-1}, {0,-1}, {1,-1} };
+    vector<pair<int,int>> moves = { {1,0}, {-1,0}, {0,1}, {0,-1}};
     map<pair<int,int>, pair<int,int>, Compare> parent;
     map<pair<int,int>, bool> seen;
     parent[zpos] = pair<int,int>(-1,-1);
@@ -43,7 +44,6 @@ vector<pair<int,int>> Zombie::bfs(const vector<string>& mymap, pair<int,int>& zp
                     q.push_back(pair<int,int>(u.first, u.second));
                 }
             }
-            
         }
     }
     return {};
@@ -55,7 +55,7 @@ vector<pair<int,int>> Zombie::shortest_path(map<pair<int,int>,pair<int,int>,Comp
     vector<pair<int,int>> path;
     pair<int,int> v = player_pos;
     path.push_back(v);
-    while (parents[v].first != zombie_pos.first && parents[v].second != zombie_pos.second) {
+    while (parents[v].first != zombie_pos.first || parents[v].second != zombie_pos.second) {
         v = parents[v];
         path.push_back(v);
     }
@@ -65,6 +65,7 @@ vector<pair<int,int>> Zombie::shortest_path(map<pair<int,int>,pair<int,int>,Comp
 
 void Zombie::update_zombie(vector<string>& mymap, pair<int,int>& ppos) 
 {
+
     if (clock.getElapsedTime().asSeconds() >= update_time) {
         pair<int,int> x = {(int)pos.first, (int)pos.second};
         vector<pair<int,int>> path = bfs(mymap, x, ppos);

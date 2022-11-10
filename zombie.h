@@ -8,14 +8,20 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <iostream>
+// #include "map.h"
 
 using namespace std;
+
+
 
 
 struct Compare
 {
     bool operator() (const pair<int,int>& p1, const pair<int,int>& p2) const {
-        return sqrt(pow(p1.first,2) + pow(p1.second, 2)) < sqrt(pow(p2.first,2) + pow(p2.second, 2));
+        int mapsizex = 42;
+        int one = p1.second + p1.first * mapsizex;
+        int two = p2.second + p2.first * mapsizex;
+        return one < two;
     }
 };
 
