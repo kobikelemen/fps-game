@@ -31,7 +31,7 @@ vector<string> mymap = {
 
 
 pair<float,float> player_pos = {5,5};
-float player_angle = 0.2; // radians
+float player_angle = 0; // radians
 float player_fov = PI / 4; // radians
 int num_columns = 120;
 float max_dist = 7;
@@ -150,6 +150,8 @@ public:
             angle += dangle;
         }
 
+        
+
         start_angle = player_angle - player_fov / 2;
         angle = start_angle;
         for (int x=0; x < num_columns; x++) {
@@ -234,10 +236,10 @@ int main()
     window->setFramerateLimit(100);
     Screen screen(window, screenw, screenh);
     Player player;
-    vector<Zombie*> zombies;
-    Zombie *z1 = new Zombie({2,2});
+    // vector<Zombie*> zombies;
+    // Zombie *z1 = new Zombie({2,2});
     // Zombie *z2 = new Zombie({2,5});
-    zombies.push_back(z1);
+    // zombies.push_back(z1);
     // zombies.push_back(z2);
 
     while (window->isOpen())
@@ -249,7 +251,7 @@ int main()
                 window->close();
         }
         // print_map();
-        update_zombies(zombies);
+        // update_zombies(zombies);
         player.update_player();
         screen.show_screen();
     }
