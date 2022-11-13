@@ -9,11 +9,18 @@ Zombie::Zombie(pair<int,int> p)
     pos = p;
     update_time = 1.f;
     clock.restart();
+    shape = new sf::RectangleShape(sf::Vector2f(100.f,150.f));
+    texture = new sf::Texture();
+    texture->loadFromFile("zombie7.png");
+    shape->setTexture(texture);
+    animation = new Animation(texture, sf::Vector2u(3,4), 0.5f);
+    sf::Clock clock;
 }
 
 Zombie::~Zombie()
 {
     delete shape;
+    delete texture;
 }
 
 
@@ -74,6 +81,21 @@ void Zombie::update_zombie(vector<string>& mymap, pair<int,int>& ppos)
             pos = back;
         }
         clock.restart();
-    }    
+    }
 }
 
+
+
+void Zombie::update_animation()
+{
+    animation->update(0, dt);
+    shape->setTextureRect(animation->uv_rect);
+}
+
+
+void Zombie::set_screen_pos(float zombiex, float zombiey, float zwidth)
+{
+    shape->setPosition(zombiex, zombiey);
+    shape->setSize(sf::Vector2f(zwidth, zwidth));
+
+}

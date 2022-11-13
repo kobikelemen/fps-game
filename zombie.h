@@ -9,6 +9,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 // #include "map.h"
+#include "animation.h"
 
 using namespace std;
 
@@ -31,16 +32,21 @@ class Zombie
     
     float speed; 
     float health;
-    sf::RectangleShape * shape;
+    sf::Texture * texture;
+    Animation * animation;
     sf::Clock clock;
+    float dt;
     float update_time;
     vector<pair<int,int> > bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos);
     vector<pair<int,int> > shortest_path(map<pair<int,int>, pair<int,int>, Compare> &parents, pair<int,int> &player_pos, pair<int,int> &zombie_pos);
 public:
     pair<float,float> pos;
+    sf::RectangleShape * shape;
     Zombie(pair<int,int> p);
     ~Zombie();
     void update_zombie(vector<string>& mymap, pair<int,int>& ppos);
+    void set_screen_pos(float zombiex, float zombiey, float zwidth);
+    void update_animation();
 };
 
 #endif
