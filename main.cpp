@@ -32,7 +32,7 @@ vector<string> mymap = {
 
 pair<float,float> player_pos = {6,5};
 float player_angle = 0; // radians
-float player_fov = PI / 4; // radians
+float player_fov = PI / 2; // radians
 int num_columns = 120;
 float max_dist = 7;
 
@@ -80,7 +80,6 @@ public:
     pair<float,bool> get_dist(float angle, char c) {
         float x = player_pos.first;
         float y = player_pos.second;
-
         while (mymap[(int)x][(int)y] != c) {
             x += 0.1 * cos(angle);
             y += 0.1 * sin(angle);
@@ -112,9 +111,7 @@ public:
             col_height = 0;
         }
         float coly = (screen_height - col_height) / 2;
-
         sf::RectangleShape col = sf::RectangleShape(sf::Vector2f(col_width, col_height));
-
         if (colour == 1) {
             if (vertical) {
                 col.setFillColor(sf::Color(0,0,100));
@@ -167,11 +164,24 @@ public:
 
 
     float player_to_zombie_angle(pair<int,int> zpos, pair<int,int> ppos) {
-        float denominator = zpos.second - ppos.second;
-         if (denominator == 0) {
-            return 0;
-         }
-        return atan((ppos.first - zpos.first) / (denominator));
+        float denominator = zpos.first - ppos.first;
+        if (denominator == 0) {
+            float res;
+            if (ppos.second > zpos.second) {
+                return PI/2;
+            } else {
+                return 3*PI/2;
+            }
+            
+        }
+        if (ppos.first > zpos.first) {
+            return atan((ppos.second - zpos.second) / (denominator)) + PI;
+        }
+        if (ppos.first < zpos.first && ppos.second < zpos.second) {
+            return atan((ppos.second - zpos.second) / (denominator)) + 2*PI;
+        }
+        return atan((ppos.second - zpos.second) / (denominator));
+        
     }
 
     float zombie_width(pair<int,int> zpos, pair<int,int> ppos) {
@@ -187,11 +197,12 @@ public:
     {
         for (Zombie* z : zombies) {
             float rel_angle = player_to_zombie_angle(z->pos, player_pos);
-            if (abs(rel_angle) < player_fov / 2) {
-                float midx = screen_width * (player_fov/2 + rel_angle) / player_fov;
+            float x = abs(rel_angle - (PI-player_angle)) - PI;
+            if (abs(x) < player_fov / 2) {
+                float midx = screen_width * (player_fov/2 - x) / player_fov;
                 float zwidth = zombie_width(z->pos, player_pos);
                 float zombiex = midx - zwidth/2;
-                float zombiey = screen_height/2 - zombiex/2;
+                float zombiey = screen_height/2 - zwidth/3;
                 if (midx - zwidth/2 > 0 && midx + zwidth/2 < screen_width) {
                     z->set_screen_pos(zombiex, zombiey, zwidth);
                     z->update_animation();
@@ -274,7 +285,7 @@ int main()
     Screen screen(window, screenw, screenh);
     Player player;
     vector<Zombie*> zombies;
-    Zombie *z1 = new Zombie({5,2});
+    Zombie *z1 = new Zombie({5,5});
     zombies.push_back(z1);
 
     while (window->isOpen())
@@ -286,7 +297,7 @@ int main()
                 window->close();
         }
         print_map();
-        update_zombies(zombies);
+        // update_zombies(zombies);
         player.update_player();
         screen.show_screen(zombies);
     }
