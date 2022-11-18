@@ -32,8 +32,9 @@ vector<string> mymap = {
 
 pair<float,float> player_pos = {6,5};
 float player_angle = 0; // radians
-float player_fov = PI / 2; // radians
-int num_columns = 120;
+float player_fov = PI / 4; // radians
+// int num_columns = 120;
+int num_columns = 1200;
 float max_dist = 7;
 
 
@@ -87,7 +88,6 @@ public:
                 return {-1.f,false};
             }
         }
-
         float dx = x - player_pos.first; 
         float dy = y - player_pos.second;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -121,8 +121,6 @@ public:
         } else if (colour == 2) {
             col.setFillColor(sf::Color::Red);
         }
-        
-        
         col.setPosition(colx, coly);
         window->draw(col);
 
@@ -146,24 +144,13 @@ public:
             display_column(dist_vertical.first, dist_vertical.second, angle - start_angle, 0, 1);
             angle += dangle;
         }
-
-
-        // start_angle = player_angle - player_fov / 2;
-        // angle = start_angle;
-        // for (int x=0; x < num_columns; x++) {
-        //     pair<float,bool> dist_vertical = get_dist(angle, 'Z');
-        //     if (dist_vertical.first != -1) {
-        //         display_column(dist_vertical.first, dist_vertical.second, angle - start_angle, 30, 2);
-        //     }            
-        //     angle += dangle;
-        // }
         show_zombies(zombies);
-
         window->display();
     }
 
 
     float player_to_zombie_angle(pair<int,int> zpos, pair<int,int> ppos) {
+        /* player line of sight angle to zombie */
         float denominator = zpos.first - ppos.first;
         if (denominator == 0) {
             float res;
@@ -171,8 +158,7 @@ public:
                 return PI/2;
             } else {
                 return 3*PI/2;
-            }
-            
+            }   
         }
         if (ppos.first > zpos.first) {
             return atan((ppos.second - zpos.second) / (denominator)) + PI;
@@ -192,23 +178,63 @@ public:
         return height; // width = height here
     }
 
+    void show_a_zombie(Zombie* z) 
+    {
+        cout << "SHOWING ZOMBIE" << endl;
+        float rel_angle = player_to_zombie_angle(z->pos, player_pos);
+        float x = abs(rel_angle - (PI-player_angle)) - PI;
+        if (abs(x) < player_fov / 2) {
+            float midx = screen_width * (player_fov/2 - x) / player_fov;
+            float zwidth = zombie_width(z->pos, player_pos);
+            float zombiex = midx - zwidth/2;
+            float zombiey = screen_height/2 - zwidth/4;
+            if (midx - zwidth/2 > 0 && midx + zwidth/2 < screen_width) {
+                z->set_screen_pos(zombiex, zombiey, zwidth);
+                z->update_animation();
+                window->draw(*z->shape);
+            } 
+            
+        }
+    }
+
+    
+
+    bool wall_blocking(Zombie* z)
+    {
+        float angle = atan((0.1 + z->pos.second - player_pos.second) / (0.1 + z->pos.first - player_pos.first));
+        if (player_pos.first >= z->pos.first) {
+            angle += PI;
+        }
+        cout << "angle " << angle * 180/PI<< endl;
+        float x = player_pos.first;
+        float y = player_pos.second;
+        vector<pair<int,int>> poses = {{(int)x, (int)y}};
+        while (mymap[(int)x][(int)y] != 'Z') {
+            if (poses.back().first != (int)x || poses.back().second != (int)y) {
+                poses.push_back({(int)x, (int)y});
+            }
+            x += 0.1 * cos(angle);
+            y += 0.1 * sin(angle);
+            if (mymap[(int)x][(int)y] == '#') {
+                cout << (int)x << " " << (int)y << endl;
+                for (auto n : poses) {
+                    cout << n.first << ", " << n.second << "    ";
+                }
+                cout << endl;
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     void show_zombies(vector<Zombie*>& zombies)
     {
         for (Zombie* z : zombies) {
-            float rel_angle = player_to_zombie_angle(z->pos, player_pos);
-            float x = abs(rel_angle - (PI-player_angle)) - PI;
-            if (abs(x) < player_fov / 2) {
-                float midx = screen_width * (player_fov/2 - x) / player_fov;
-                float zwidth = zombie_width(z->pos, player_pos);
-                float zombiex = midx - zwidth/2;
-                float zombiey = screen_height/2 - zwidth/3;
-                if (midx - zwidth/2 > 0 && midx + zwidth/2 < screen_width) {
-                    z->set_screen_pos(zombiex, zombiey, zwidth);
-                    z->update_animation();
-                    window->draw(*z->shape);
-                } 
-                
+            if (!wall_blocking(z)) {
+                show_a_zombie(z);
+            } else {
+                cout << "WALL BLOCKING" << endl;
             }
         }
     }
@@ -288,6 +314,7 @@ int main()
     Zombie *z1 = new Zombie({5,5});
     zombies.push_back(z1);
 
+
     while (window->isOpen())
     {
         sf::Event event;
@@ -297,7 +324,7 @@ int main()
                 window->close();
         }
         print_map();
-        // update_zombies(zombies);
+        update_zombies(zombies);
         player.update_player();
         screen.show_screen(zombies);
     }
