@@ -8,7 +8,6 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <iostream>
-// #include "map.h"
 #include "animation.h"
 
 using namespace std;
@@ -37,8 +36,9 @@ class Zombie
     sf::Clock clock;
     float dt;
     float update_time;
-    vector<pair<int,int> > bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos);
-    vector<pair<int,int> > shortest_path(map<pair<int,int>, pair<int,int>, Compare> &parents, pair<int,int> &player_pos, pair<int,int> &zombie_pos);
+    vector<pair<float,float>> path;
+    vector<pair<float,float> > bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos);
+    vector<pair<float,float> > shortest_path(map<pair<int,int>, pair<int,int>, Compare> &parents, pair<int,int> &player_pos, pair<int,int> &zombie_pos);
 public:
     pair<float,float> pos;
     sf::RectangleShape * shape;

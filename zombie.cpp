@@ -9,7 +9,7 @@ Zombie::Zombie(pair<int,int> p)
     pos = p;
     update_time = 1.f;
     clock.restart();
-    shape = new sf::RectangleShape(sf::Vector2f(100.f,150.f));
+    shape = new sf::RectangleShape(sf::Vector2f(65.f,65.f));
     texture = new sf::Texture();
     texture->loadFromFile("zombie7.png");
     shape->setTexture(texture);
@@ -24,7 +24,7 @@ Zombie::~Zombie()
 }
 
 
-vector<pair<int,int>> Zombie::bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos) 
+vector<pair<float,float>> Zombie::bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos) 
 {   
     list<pair<int,int>> q = {zpos};
     // vector<pair<int,int>> moves = { {1,0}, {1,1}, {-1,0}, {-1,1}, {0,1}, {-1,-1}, {0,-1}, {1,-1} };
@@ -38,9 +38,6 @@ vector<pair<int,int>> Zombie::bfs(const vector<string>& mymap, pair<int,int>& zp
         seen[v] = true;
         q.pop_front();
         if (v.first == ppos.first && v.second == ppos.second) {
-            // for (auto p : parent) {
-            //     cout << p.first.first << " " << p.first.second << " --> " << p.second.first << " " << p.second.second << endl;
-            // }
             return shortest_path(parent, ppos, zpos);
         }
         for (pair<int,int> m : moves) {
@@ -57,30 +54,49 @@ vector<pair<int,int>> Zombie::bfs(const vector<string>& mymap, pair<int,int>& zp
 }
 
 
-vector<pair<int,int>> Zombie::shortest_path(map<pair<int,int>,pair<int,int>,Compare> &parents, pair<int,int> &player_pos, pair<int,int> &zombie_pos)
+vector<pair<float,float>> Zombie::shortest_path(map<pair<int,int>,pair<int,int>,Compare> &parents, pair<int,int> &player_pos, pair<int,int> &zombie_pos)
 {
-    vector<pair<int,int>> path;
+    vector<pair<float,float>> path;
     pair<int,int> v = player_pos;
     path.push_back(v);
     while (parents[v].first != zombie_pos.first || parents[v].second != zombie_pos.second) {
         v = parents[v];
-        path.push_back(v);
+        pair<float,float> n = {(float)v.first + 0.5, (float)v.second + 0.5};
+        path.push_back(n);
     }
     return path;
 }
 
 
+
 void Zombie::update_zombie(vector<string>& mymap, pair<int,int>& ppos) 
 {
-
-    if (clock.getElapsedTime().asSeconds() >= update_time) {
+    float dt = clock.getElapsedTime().asSeconds();
+    if (dt >= update_time) {
         pair<int,int> x = {(int)pos.first, (int)pos.second};
-        vector<pair<int,int>> path = bfs(mymap, x, ppos);
-        auto back = path.back();
-        if (mymap[back.first][back.second] == '-') {
-            pos = back;
-        }
+        path = bfs(mymap, x, ppos);
         clock.restart();
+    }
+    
+    if (path.size() > 0) {
+        auto back = path.back();
+        float dx = back.first - pos.first;
+        float dy = back.second - pos.second;
+        pair<float,float> direction = {dx/sqrt(pow(dx,2)+pow(dy,2)), dy/sqrt(pow(dx,2)+pow(dy,2))};
+        auto prev_pos = pos;
+        float d = 0.01;
+        if (mymap[pos.first+d*direction.first][pos.second+d*direction.second] == '#') {
+            pair<int,int> x = {(int)pos.first, (int)pos.second};
+            path = bfs(mymap, x, ppos);
+            clock.restart();
+            return;
+        }
+
+        pos.first += d * direction.first;
+        pos.second += d * direction.second;
+        if (mymap[pos.first][pos.second] == '-') {
+            mymap[prev_pos.first][prev_pos.second] = '-';
+        }
     }
 }
 

@@ -170,7 +170,7 @@ public:
         
     }
 
-    float zombie_width(pair<int,int> zpos, pair<int,int> ppos) {
+    float zombie_width(pair<float,float> zpos, pair<float,float> ppos) {
         /* given distance between zombie and player, returns zombie x size */
         float dist = sqrt(pow(zpos.first - ppos.first, 2) + pow(zpos.second - ppos.second, 2));
         float ceiling = screen_height/2 - (screen_height)/dist;
@@ -180,7 +180,6 @@ public:
 
     void show_a_zombie(Zombie* z) 
     {
-        cout << "SHOWING ZOMBIE" << endl;
         float rel_angle = player_to_zombie_angle(z->pos, player_pos);
         float x = abs(rel_angle - (PI-player_angle)) - PI;
         if (abs(x) < player_fov / 2) {
@@ -193,7 +192,6 @@ public:
                 z->update_animation();
                 window->draw(*z->shape);
             } 
-            
         }
     }
 
@@ -205,7 +203,6 @@ public:
         if (player_pos.first >= z->pos.first) {
             angle += PI;
         }
-        cout << "angle " << angle * 180/PI<< endl;
         float x = player_pos.first;
         float y = player_pos.second;
         vector<pair<int,int>> poses = {{(int)x, (int)y}};
@@ -216,11 +213,6 @@ public:
             x += 0.1 * cos(angle);
             y += 0.1 * sin(angle);
             if (mymap[(int)x][(int)y] == '#') {
-                cout << (int)x << " " << (int)y << endl;
-                for (auto n : poses) {
-                    cout << n.first << ", " << n.second << "    ";
-                }
-                cout << endl;
                 return true;
             }
         }
@@ -233,8 +225,6 @@ public:
         for (Zombie* z : zombies) {
             if (!wall_blocking(z)) {
                 show_a_zombie(z);
-            } else {
-                cout << "WALL BLOCKING" << endl;
             }
         }
     }
