@@ -251,7 +251,7 @@ class Player
         player_angle += dangle;
         mousepos = sf::Vector2i(screenw/2, screenh/2);
         sf::Mouse::setPosition(mousepos);
-        player_angle = fmod(player_angle, 2*PI);
+        player_angle = fmod(player_angle, 2*PI); //
     }
 
     void move(bool forward, bool left, bool vertical, bool horizontal) {
