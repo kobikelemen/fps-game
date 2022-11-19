@@ -5,9 +5,6 @@
 #include <iostream>
 
 #include "zombie.h"
-// #include "map.h"
-
-// g++ main.cpp -I/usr/local/Cellar/sfml/2.5.1_1/include/ -o main -L/usr/local/Cellar/sfml/2.5.1_1/lib/ -lsfml-graphics -lsfml-window -lsfml-system
 
 
 using namespace std;
@@ -181,7 +178,7 @@ public:
     void show_a_zombie(Zombie* z) 
     {
         float rel_angle = player_to_zombie_angle(z->pos, player_pos);
-        float x = abs(rel_angle - (PI-player_angle)) - PI;
+        float x = -(abs(rel_angle - (PI-player_angle)) - PI);
         if (abs(x) < player_fov / 2) {
             float midx = screen_width * (player_fov/2 - x) / player_fov;
             float zwidth = zombie_width(z->pos, player_pos);
@@ -235,32 +232,44 @@ public:
 class Player
 {
     /* 
-    get inputs from keyboard to update player_angle and position
+    gets inputs from keyboard & mouse to update player_angle and position
     */
 
-    void rotate(bool clockwise) {
-        
-        float dangle = 0.07/3;
-        if (clockwise && player_angle < 2*PI - dangle) {
-            player_angle += dangle;    
-        } else if (clockwise && player_angle >= 2*PI - dangle) {
-            player_angle = dangle;
-        } else if (!clockwise && player_angle > dangle) {
-            player_angle -= dangle;
-        } else if (!clockwise && player_angle <= dangle) {
-            player_angle = 2*PI - dangle;
+   sf::Vector2i mousepos;
+   float screenw;
+   float screenh;
+
+    void rotate() {
+        sf::Vector2i newmousepos = sf::Mouse::getPosition();
+        if (newmousepos.x < 0) {
+            newmousepos = sf::Vector2i(0, newmousepos.y);
+        } else if (newmousepos.x > screenw) {
+            newmousepos = sf::Vector2i(screenw, newmousepos.y);
         }
+        float mouse_sensitivity = 3.f;
+        float dangle = mouse_sensitivity * player_fov * (newmousepos.x - mousepos.x) / screenw;
+        player_angle += dangle;
+        mousepos = sf::Vector2i(screenw/2, screenh/2);
+        sf::Mouse::setPosition(mousepos);
+        player_angle = fmod(player_angle, 2*PI);
     }
 
-    void move(bool forward) {
+    void move(bool forward, bool left, bool vertical, bool horizontal) {
         
         float negative = -1.f;
-        if (forward) {
+        if (forward || left) {
             negative = 1.f;
         } 
         float d = 0.15/3;
-        float dx = negative * d * cos(player_angle);
-        float dy = negative * d * sin(player_angle);
+        float dx, dy;
+        if (vertical) { 
+            dx = negative * d * cos(player_angle);
+            dy = negative * d * sin(player_angle);
+        } else if (horizontal) {
+            float horiz_sensitivity = 0.5;
+            dy = negative * horiz_sensitivity * d * cos(PI-player_angle);
+            dx = negative * horiz_sensitivity * d * sin(PI-player_angle);
+        }
         
         if (
             mymap[(int)(player_pos.first + dx)][(int)(player_pos.second + dy)] == '-' 
@@ -273,19 +282,22 @@ class Player
 
 public:
 
-    Player() {
-
+    Player(float screenw, float screenh) {
+        this->screenw = screenw;
+        this->screenh = screenh;
+        mousepos = sf::Vector2i(screenw, screenh);
     }
 
     void update_player() {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) 
-            rotate(false);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) 
-            rotate(true);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) 
-            move(true);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) 
-            move(false);
+        rotate();
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
+            move(false, true, false, true);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) 
+            move(false, false, false, true);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) 
+            move(true, false, true, false);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) 
+            move(false, false, true, false);
     }
 };
 
@@ -299,7 +311,7 @@ int main()
     sf::RenderWindow *window = new sf::RenderWindow(sf::VideoMode(screenw, screenh), "FPS");
     window->setFramerateLimit(100);
     Screen screen(window, screenw, screenh);
-    Player player;
+    Player player(screenw, screenh);
     vector<Zombie*> zombies;
     Zombie *z1 = new Zombie({5,5});
     zombies.push_back(z1);
@@ -313,10 +325,14 @@ int main()
             if (event.type == sf::Event::Closed)
                 window->close();
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+            window->close();
+        }
         print_map();
         update_zombies(zombies);
         player.update_player();
         screen.show_screen(zombies);
+        
     }
     delete window;
 }
