@@ -146,7 +146,7 @@ public:
     }
 
 
-    float player_to_zombie_angle(pair<int,int> zpos, pair<int,int> ppos) {
+    float player_to_zombie_angle(pair<float,float> zpos, pair<float,float> ppos) {
         /* player line of sight angle to zombie */
         float denominator = zpos.first - ppos.first;
         if (denominator == 0) {
@@ -157,12 +157,10 @@ public:
                 return 3*PI/2;
             }   
         }
-        if (ppos.first > zpos.first) {
+        if (ppos.first > zpos.first) 
             return atan((ppos.second - zpos.second) / (denominator)) + PI;
-        }
-        if (ppos.first < zpos.first && ppos.second < zpos.second) {
+        if (ppos.first < zpos.first && ppos.second < zpos.second) 
             return atan((ppos.second - zpos.second) / (denominator)) + 2*PI;
-        }
         return atan((ppos.second - zpos.second) / (denominator));
         
     }
@@ -251,7 +249,7 @@ class Player
         player_angle += dangle;
         mousepos = sf::Vector2i(screenw/2, screenh/2);
         sf::Mouse::setPosition(mousepos);
-        player_angle = fmod(player_angle, 2*PI); //
+        player_angle = fmod(player_angle, 2*PI);
     }
 
     void move(bool forward, bool left, bool vertical, bool horizontal) {
