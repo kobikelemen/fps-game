@@ -33,8 +33,8 @@ class Zombie
     float health;
     sf::Texture * texture;
     Animation * animation;
-    sf::Clock clock;
-    float dt;
+    sf::Clock clock1;
+    sf::Clock clock2;
     float update_time;
     vector<pair<float,float>> path;
     vector<pair<float,float> > bfs(const vector<string>& mymap, pair<int,int>& zpos, pair<int,int>& ppos);

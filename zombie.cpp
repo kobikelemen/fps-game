@@ -8,19 +8,20 @@ Zombie::Zombie(pair<int,int> p)
     health = 100.f;
     pos = p;
     update_time = 1.f;
-    clock.restart();
+    clock1.restart();
+    clock2.restart();
     shape = new sf::RectangleShape(sf::Vector2f(65.f,65.f));
     texture = new sf::Texture();
     texture->loadFromFile("zombie7.png");
     shape->setTexture(texture);
     animation = new Animation(texture, sf::Vector2u(3,4), 0.5f);
-    sf::Clock clock;
 }
 
 Zombie::~Zombie()
 {
     delete shape;
     delete texture;
+    delete animation;
 }
 
 
@@ -71,11 +72,11 @@ vector<pair<float,float>> Zombie::shortest_path(map<pair<int,int>,pair<int,int>,
 
 void Zombie::update_zombie(vector<string>& mymap, pair<int,int>& ppos) 
 {
-    float dt = clock.getElapsedTime().asSeconds();
+    float dt = clock2.getElapsedTime().asSeconds();
     if (dt >= update_time) {
         pair<int,int> x = {(int)pos.first, (int)pos.second};
         path = bfs(mymap, x, ppos);
-        clock.restart();
+        clock2.restart();
     }
     
     if (path.size() > 0) {
@@ -88,10 +89,9 @@ void Zombie::update_zombie(vector<string>& mymap, pair<int,int>& ppos)
         if (mymap[pos.first+d*direction.first][pos.second+d*direction.second] == '#') {
             pair<int,int> x = {(int)pos.first, (int)pos.second};
             path = bfs(mymap, x, ppos);
-            clock.restart();
+            clock2.restart();
             return;
         }
-
         pos.first += d * direction.first;
         pos.second += d * direction.second;
         if (mymap[pos.first][pos.second] == '-') {
@@ -104,7 +104,8 @@ void Zombie::update_zombie(vector<string>& mymap, pair<int,int>& ppos)
 
 void Zombie::update_animation()
 {
-    animation->update(0, dt);
+    animation->update(0, clock1.getElapsedTime().asSeconds());
+    clock1.restart();
     shape->setTextureRect(animation->uv_rect);
 }
 
@@ -113,5 +114,4 @@ void Zombie::set_screen_pos(float zombiex, float zombiey, float zwidth)
 {
     shape->setPosition(zombiex, zombiey);
     shape->setSize(sf::Vector2f(zwidth, zwidth));
-
 }

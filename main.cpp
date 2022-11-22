@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "zombie.h"
-
+#include "gun.h"
 
 using namespace std;
 
@@ -132,7 +132,7 @@ public:
         col_width = screen_width / num_columns;
     }
 
-    void show_screen(vector<Zombie*>& zombies) {
+    void show_screen(vector<Zombie*>& zombies, Gun* gun) {
         window->clear();
         float start_angle = player_angle - player_fov / 2;
         float angle = start_angle;
@@ -142,6 +142,7 @@ public:
             angle += dangle;
         }
         show_zombies(zombies);
+        window->draw(*gun->shape);
         window->display();
     }
 
@@ -286,8 +287,11 @@ public:
         mousepos = sf::Vector2i(screenw, screenh);
     }
 
-    void update_player() {
+    void update_player(Gun* gun) {
         rotate();
+        // if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+            gun->update_animation(true);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
             move(false, true, false, true);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) 
@@ -310,6 +314,7 @@ int main()
     window->setFramerateLimit(100);
     Screen screen(window, screenw, screenh);
     Player player(screenw, screenh);
+    Gun *gun = new Gun(screenw, screenh);
     vector<Zombie*> zombies;
     Zombie *z1 = new Zombie({5,5});
     zombies.push_back(z1);
@@ -328,9 +333,12 @@ int main()
         }
         print_map();
         update_zombies(zombies);
-        player.update_player();
-        screen.show_screen(zombies);
+        player.update_player(gun);
+        gun->update_animation(false);
+        window->draw(*gun->shape);
+        screen.show_screen(zombies, gun);
         
     }
     delete window;
+    delete gun;
 }
