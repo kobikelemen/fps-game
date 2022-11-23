@@ -62,6 +62,30 @@ void update_zombies(vector<Zombie*>& zombies)
     }
 }
 
+pair<float,float> get_intersection(float x, float y, float angle, char c)
+{
+    while (mymap[(int)x][(int)y] != c) {
+        x += 0.1 * cos(angle);
+        y += 0.1 * sin(angle);
+        if (int(x) >= mymap.size() || int(x) < 0 || int(y) >= mymap[0].size() || int(y) < 0) {
+            return {-1,-1};
+        }
+    }
+    return {x,y};
+}
+
+
+void delete_zombie(int posx, float posy, vector<Zombie*>& zombies)
+{
+    for (int i=0; i < zombies.size(); i++) {
+        if ((int)zombies[i]->pos.first == posx && (int)zombies[i]->pos.second == posy) {
+            mymap[posx][posy] = '-';
+            zombies.erase(zombies.begin() + i);
+        }
+    }
+}
+
+
 
 
 class Screen
@@ -74,17 +98,18 @@ class Screen
 
 public:
 
+    
 
     pair<float,bool> get_dist(float angle, char c) {
         float x = player_pos.first;
         float y = player_pos.second;
-        while (mymap[(int)x][(int)y] != c) {
-            x += 0.1 * cos(angle);
-            y += 0.1 * sin(angle);
-            if (int(x) >= mymap.size() || int(x) < 0 || int(y) >= mymap[0].size() || int(y) < 0) {
-                return {-1.f,false};
-            }
+        pair<float,float> a = get_intersection(x, y, angle, c);
+        if (a.first == -1) {
+            return {-1.f, false};
         }
+        x = a.first;
+        y = a.second;
+        
         float dx = x - player_pos.first; 
         float dy = y - player_pos.second;
         float d = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -287,11 +312,14 @@ public:
         mousepos = sf::Vector2i(screenw, screenh);
     }
 
-    void update_player(Gun* gun) {
+    void update_player(Gun* gun, vector<Zombie*>& zombies) {
         rotate();
-        // if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
             gun->update_animation(true);
+            pair<float,float> collision_pos = get_intersection(player_pos.first, player_pos.second, player_angle, 'Z');
+            if (mymap[(int)collision_pos.first][(int)collision_pos.second] == 'Z')
+                delete_zombie((int)collision_pos.first, (int)collision_pos.second, zombies);
+        }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
             move(false, true, false, true);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) 
@@ -333,7 +361,7 @@ int main()
         }
         print_map();
         update_zombies(zombies);
-        player.update_player(gun);
+        player.update_player(gun, zombies);
         gun->update_animation(false);
         window->draw(*gun->shape);
         screen.show_screen(zombies, gun);

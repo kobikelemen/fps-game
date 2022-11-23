@@ -17,6 +17,7 @@ Zombie::Zombie(pair<int,int> p)
     animation = new Animation(texture, sf::Vector2u(3,4), 0.5f);
 }
 
+
 Zombie::~Zombie()
 {
     delete shape;
