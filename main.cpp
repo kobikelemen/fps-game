@@ -6,6 +6,7 @@
 
 #include "zombie.h"
 #include "gun.h"
+#include "game.h"
 
 using namespace std;
 
@@ -80,7 +81,9 @@ void delete_zombie(int posx, float posy, vector<Zombie*>& zombies)
     for (int i=0; i < zombies.size(); i++) {
         if ((int)zombies[i]->pos.first == posx && (int)zombies[i]->pos.second == posy) {
             mymap[posx][posy] = '-';
+            Zombie *z = zombies[i];
             zombies.erase(zombies.begin() + i);
+            delete z;
         }
     }
 }
@@ -97,8 +100,6 @@ class Screen
     float col_width;
 
 public:
-
-    
 
     pair<float,bool> get_dist(float angle, char c) {
         float x = player_pos.first;
@@ -191,6 +192,7 @@ public:
         
     }
 
+
     float zombie_width(pair<float,float> zpos, pair<float,float> ppos) {
         /* given distance between zombie and player, returns zombie x size */
         float dist = sqrt(pow(zpos.first - ppos.first, 2) + pow(zpos.second - ppos.second, 2));
@@ -198,6 +200,7 @@ public:
         float height = screen_height - 2*ceiling;
         return height; // width = height here
     }
+
 
     void show_a_zombie(Zombie* z) 
     {
@@ -217,7 +220,6 @@ public:
     }
 
     
-
     bool wall_blocking(Zombie* z)
     {
         float angle = atan((0.1 + z->pos.second - player_pos.second) / (0.1 + z->pos.first - player_pos.first));
@@ -344,9 +346,7 @@ int main()
     Player player(screenw, screenh);
     Gun *gun = new Gun(screenw, screenh);
     vector<Zombie*> zombies;
-    Zombie *z1 = new Zombie({5,5});
-    zombies.push_back(z1);
-
+    Game *game = new Game(&mymap, &zombies, { {1,20},{5,1},{5,40},{8,20}} );
 
     while (window->isOpen())
     {
@@ -361,6 +361,7 @@ int main()
         }
         print_map();
         update_zombies(zombies);
+        game->update();
         player.update_player(gun, zombies);
         gun->update_animation(false);
         window->draw(*gun->shape);
@@ -369,4 +370,5 @@ int main()
     }
     delete window;
     delete gun;
+    delete game;
 }
