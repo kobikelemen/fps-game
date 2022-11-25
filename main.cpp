@@ -205,7 +205,11 @@ public:
     void show_a_zombie(Zombie* z) 
     {
         float rel_angle = player_to_zombie_angle(z->pos, player_pos);
-        float x = -(abs(rel_angle - (PI-player_angle)) - PI);
+        float pangle = player_angle;
+        if (pangle > 0) 
+            pangle = pangle - 2*PI;
+
+        float x = -(abs(rel_angle - (PI-pangle)) - PI);
         if (abs(x) < player_fov / 2) {
             float midx = screen_width * (player_fov/2 - x) / player_fov;
             float zwidth = zombie_width(z->pos, player_pos);
